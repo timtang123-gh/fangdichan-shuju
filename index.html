@@ -438,7 +438,7 @@ function renderNChart(){
         document.getElementById('nct').textContent='商品房销售均价 · 6月平滑';
         document.getElementById('ncu').textContent='元/㎡';
         _mc.setOption({
-            tooltip:{trigger:'axis'},legend:{data:['当月均价','6月平滑'],bottom:0},
+            tooltip:{trigger:'axis',formatter:function(ps){let s=ps[0].name+'<br/>';ps.forEach(p=>s+=`${p.marker}${p.seriesName}: <b>${typeof p.value==='number'?p.value.toFixed(0):'--'}</b> 元/㎡<br/>`);return s;}},legend:{data:['当月均价','6月平滑'],bottom:0},
             grid:{left:60,right:30,top:15,bottom:40},
             xAxis:{type:'category',data:getLabels(),axisLabel:{rotate:45,fontSize:9,interval:getInt()}},
             yAxis:{type:'value',name:'元/㎡',min:4000},

@@ -3,14 +3,14 @@ name: 月度数据自动更新
 on:
   schedule:
     # 每月18号 UTC 2:00 (北京时间 10:00)
-    - cron: '0 10 18 * *'
-  workflow_dispatch:  # 允许手动触发
+    - cron: '0 2 18 * *'
+  workflow_dispatch:
 
 jobs:
   update:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # 允许 git push
+      contents: write
 
     steps:
       - name: 检出仓库
@@ -29,5 +29,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html city_data_compact.json
-          git diff --staged --quiet || git commit -m "Auto update: $(date +'%Y-%m') data"
-          git push
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto update: $(date +'%Y-%m') data"
+            git push
+          fi

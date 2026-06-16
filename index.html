@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>中国房地产市场数据监测</title>
+<title>鸣海投资房地产数据库</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
@@ -11,6 +11,7 @@
 body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#f0f2f5;color:#1a1a2e;line-height:1.6;}
 .hdr{background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#fff;padding:14px 24px;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.15);display:flex;justify-content:space-between;align-items:center;}
 .hdr h1{font-size:1.25rem;}
+.logo-img{height:40px;width:auto;border-radius:4px;}
 .ctr{max-width:1500px;margin:0 auto;padding:14px 24px;}
 .top-tabs{display:flex;margin-bottom:12px;background:#fff;border-radius:10px;padding:3px;box-shadow:0 2px 12px rgba(0,0,0,.05);}
 .top-tab{flex:1;padding:10px;border:none;background:transparent;cursor:pointer;font-size:.85rem;color:#666;border-radius:8px;font-family:inherit;}
@@ -61,7 +62,7 @@ tr:hover{background:#f8f9ff;}
 </head>
 <body>
 <div class="hdr">
-    <div><h1>🏠 中国房地产市场数据监测</h1><div style="font-size:.7rem;opacity:.7">国家统计局 · 2011年至今</div></div>
+    <div style="display:flex;align-items:center;gap:12px;"><img src="logo.png" class="logo-img"><h1>鸣海投资房地产数据库</h1><div style="font-size:.7rem;opacity:.7">国家统计局 · 2011年至今</div></div>
     <div style="font-size:.7rem;opacity:.5" id="ut"></div>
 </div>
 <div class="ctr">

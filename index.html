@@ -304,7 +304,11 @@ D.forEach((r,i)=>{
     let prev = D.find(x=>x.d===py+'-'+mm);
     r.fundTotalYoy = prev&&prev.fundTotal!=null&&r.fundTotal!=null ? ((r.fundTotal-prev.fundTotal)/Math.abs(prev.fundTotal)*100) : null;
     r.priceAvgYoy = prev&&prev.priceAvg!=null&&r.priceAvg!=null ? ((r.priceAvg-prev.priceAvg)/prev.priceAvg*100) : null;
-    r.fundDepYoy = prev&&prev.fundDepositCum!=null&&r.fundDepositCum!=null ? ((r.fundDepositCum-prev.fundDepositCum)/Math.abs(prev.fundDepositCum)*100) : null;
+    r.fundDepYoy = prev&&r.fundDepositCum!=null&&prev.fundDepositCum!=null ? ((r.fundDepositCum-prev.fundDepositCum)/Math.abs(prev.fundDepositCum)*100) : null;
+    r.fundSelfYoy = prev&&r.fundSelfCum!=null&&prev.fundSelfCum!=null ? ((r.fundSelfCum-prev.fundSelfCum)/Math.abs(prev.fundSelfCum)*100) : null;
+    r.fundLoanYoy = prev&&r.fundLoanCum!=null&&prev.fundLoanCum!=null ? ((r.fundLoanCum-prev.fundLoanCum)/Math.abs(prev.fundLoanCum)*100) : null;
+    r.fundOtherYoy = prev&&r.fundOtherCum!=null&&prev.fundOtherCum!=null ? ((r.fundOtherCum-prev.fundOtherCum)/Math.abs(prev.fundOtherCum)*100) : null;
+    r.fundForeignYoy = prev&&r.fundForeignCum!=null&&prev.fundForeignCum!=null ? ((r.fundForeignCum-prev.fundForeignCum)/Math.abs(prev.fundForeignCum)*100) : null;
 });
 const NN=v=>(v===null||v===undefined)?null:v;
 const priceSMA = (()=>{
@@ -537,12 +541,22 @@ function renderNStats(){
         ['竣工面积',ld.compCum?.toFixed(0),'万㎡',ld.compCumYoy],
         ['销售均价',ld.priceAvg?.toFixed(0),'元/㎡',ld.priceAvgYoy],
         ['待售库存',ld.inventory?.toFixed(0),'万㎡',ld.inventoryYoy],
-        ['资金来源',ld.fundTotal?.toFixed(0),'亿元',ld.fundTotalYoy],
         ['到位资金',ld.fundTotal?.toFixed(0),'亿元',ld.fundTotalYoy],
     ];
-    document.getElementById('ns').innerHTML=items.map(s=>`
+    let fy=v=>v!==null&&v!==undefined?`<span class="${v>0?'r':'g'}">${v>0?'+':''}${v.toFixed(1)}%</span>`:'-';
+    let fundBreakdown = `
+        <div class="sc" style="border-left-color:#e67e22"><div class="lbl">资金来源 同比</div>
+        <div class="val" style="font-size:.75rem;display:flex;flex-wrap:wrap;gap:4px 10px">
+            <span>定金预收 ${fy(ld.fundDepYoy)}</span>
+            <span>自筹 ${fy(ld.fundSelfYoy)}</span>
+            <span>国内贷款 ${fy(ld.fundLoanYoy)}</span>
+            <span>其他 ${fy(ld.fundOtherYoy)}</span>
+            <span>外资 ${fy(ld.fundForeignYoy)}</span>
+        </div></div>`;
+    let html = items.map(s=>`
         <div class="sc"><div class="lbl">${s[0]}</div><div class="val">${s[1]||'-'}<span style="font-size:.45em;margin-left:2px">${s[2]}</span></div>
         ${s[3]!==null&&s[3]!==undefined?`<div class="${s[3]>0?'r':'g'}" style="font-size:.7rem">同比 ${s[3]>0?'+':''}${s[3].toFixed(1)}%</div>`:''}</div>`).join('');
+    document.getElementById('ns').innerHTML = html + fundBreakdown;
     document.getElementById('ut').textContent=`${nF[0]?.d} ~ ${ld.d} · ${nF.length}条`;
 }
 

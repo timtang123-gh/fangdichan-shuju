@@ -538,6 +538,7 @@ function renderNStats(){
         ['销售均价',ld.priceAvg?.toFixed(0),'元/㎡',ld.priceAvgYoy],
         ['待售库存',ld.inventory?.toFixed(0),'万㎡',ld.inventoryYoy],
         ['资金来源',ld.fundTotal?.toFixed(0),'亿元',ld.fundTotalYoy],
+        ['到位资金',ld.fundTotal?.toFixed(0),'亿元',ld.fundTotalYoy],
     ];
     document.getElementById('ns').innerHTML=items.map(s=>`
         <div class="sc"><div class="lbl">${s[0]}</div><div class="val">${s[1]||'-'}<span style="font-size:.45em;margin-left:2px">${s[2]}</span></div>

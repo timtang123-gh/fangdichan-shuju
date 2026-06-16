@@ -237,8 +237,13 @@ def git_push(commit_msg):
 
 
 def main():
+    # Parse command line arguments
+    skip_push = "--skip-push" in sys.argv
+    
     print("=" * 50)
     print("70-City Housing Price Data — Auto Update")
+    if skip_push:
+        print("(CI mode: git push handled by workflow)")
     print("=" * 50)
     
     # 1. Load existing data
@@ -272,11 +277,14 @@ def main():
     html_size = inject_html(merged)
     print(f"✓ Injected into index.html ({html_size/1024:.0f}KB)")
     
-    # 6. Git push to GitHub Pages
-    print("\nPushing to GitHub Pages...")
-    from datetime import datetime
-    commit_msg = f"Auto update: {datetime.now().strftime('%Y-%m')} data"
-    git_push(commit_msg)
+    # 6. Git push to GitHub Pages (skip in CI mode)
+    if skip_push:
+        print("\n(Skipping git push — handled by CI workflow)")
+    else:
+        print("\nPushing to GitHub Pages...")
+        from datetime import datetime
+        commit_msg = f"Auto update: {datetime.now().strftime('%Y-%m')} data"
+        git_push(commit_msg)
     
     print("\n" + "=" * 50)
     print(f"✓ Update complete! Added {new_months} new month(s) of data.")

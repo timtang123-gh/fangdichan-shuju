@@ -12,6 +12,7 @@ import time
 import urllib.request
 import urllib.error
 import os
+import subprocess
 
 BASE_URL = "https://datacenter-web.eastmoney.com/api/data/v1/get"
 PAGE_SIZE = 500
@@ -194,6 +195,47 @@ def inject_html(compact):
     return len(html)
 
 
+def git_push(commit_msg):
+    """Git add, commit, and push to origin main."""
+    repo_dir = SCRIPT_DIR
+    
+    # Check if remote is configured
+    result = subprocess.run(
+        ["git", "remote", "get-url", "origin"],
+        cwd=repo_dir, capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        print("WARNING: git remote 'origin' not configured. Skipping git push.")
+        return False
+    
+    # Git add changed files
+    subprocess.run(["git", "add", "index.html", "city_data_compact.json"], cwd=repo_dir, check=True)
+    
+    # Git commit
+    result = subprocess.run(
+        ["git", "commit", "-m", commit_msg],
+        cwd=repo_dir, capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        if "nothing to commit" in result.stdout or "nothing to commit" in result.stderr:
+            print("  → No changes to commit")
+            return True
+        print(f"Git commit failed: {result.stderr}")
+        return False
+    
+    # Git push
+    result = subprocess.run(
+        ["git", "push", "origin", "main"],
+        cwd=repo_dir, capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        print(f"Git push failed: {result.stderr}")
+        return False
+    
+    print(f"  → Git pushed to origin/main")
+    return True
+
+
 def main():
     print("=" * 50)
     print("70-City Housing Price Data — Auto Update")
@@ -229,6 +271,12 @@ def main():
     # 5. Inject into HTML
     html_size = inject_html(merged)
     print(f"✓ Injected into index.html ({html_size/1024:.0f}KB)")
+    
+    # 6. Git push to GitHub Pages
+    print("\nPushing to GitHub Pages...")
+    from datetime import datetime
+    commit_msg = f"Auto update: {datetime.now().strftime('%Y-%m')} data"
+    git_push(commit_msg)
     
     print("\n" + "=" * 50)
     print(f"✓ Update complete! Added {new_months} new month(s) of data.")

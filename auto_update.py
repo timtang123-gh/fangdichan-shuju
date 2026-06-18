@@ -39,28 +39,41 @@ def get_latest_month(compact):
 def fetch_new_data(latest_month):
     """
     Fetch records newer than latest_month from East Money API.
-    Uses sort by REPORT_DATE descending + pagination.
-    Stops when we hit known months.
+    Strategy: get total page count, scan backwards from the last page.
+    East Money API returns data roughly chronologically (oldest first, newest on later pages).
+    Does NOT rely on sorting (sortFields parameter is unreliable).
+    Stops after 2 consecutive empty pages.
     """
-    # Convert YYYYMM to a sortable date string for the API filter
-    # latest_month is like "202605", we filter for REPORT_DATE > "2026-05-31"
+    # Convert YYYYMM to cutoff date string: "202605" → "2026-05-31"
     year = latest_month[:4]
     month = latest_month[4:6]
-    # Get the last day of latest_month as cutoff
     import calendar
     last_day = calendar.monthrange(int(year), int(month))[1]
     cutoff_date = f"{year}-{month}-{last_day}"
     
     print(f"Looking for data after: {cutoff_date}")
     
-    new_records = []
-    page = 1
+    # Step 1: get total page count from the first page
+    url = (f"{BASE_URL}?reportName=RPT_ECONOMY_HOUSE_PRICE"
+           f"&columns=ALL&pageNumber=1&pageSize={PAGE_SIZE}"
+           f"&source=WEB&client=WEB")
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            d = json.loads(resp.read().decode())
+        total_pages = d["result"]["pages"]
+        print(f"Total pages: {total_pages}")
+    except Exception as e:
+        print(f"Error fetching page count: {e}")
+        return []
     
-    while True:
-        # Use sort by REPORT_DATE descending to get newest first
+    # Step 2: scan backwards from the last page
+    new_records = []
+    consecutive_empty = 0
+    
+    for page in range(total_pages, 0, -1):
         url = (f"{BASE_URL}?reportName=RPT_ECONOMY_HOUSE_PRICE"
                f"&columns=ALL&pageNumber={page}&pageSize={PAGE_SIZE}"
-               f"&sortTypes=-1&sortFields=REPORT_DATE"
                f"&source=WEB&client=WEB")
         
         try:
@@ -73,14 +86,11 @@ def fetch_new_data(latest_month):
             continue
         
         if not d.get("success"):
-            print(f"API error: {d.get('message')}")
+            print(f"API error on page {page}: {d.get('message')}")
             break
         
         data = d["result"]["data"]
-        total = d["result"]["count"]
-        pages = d["result"]["pages"]
-        
-        print(f"Page {page}/{pages}: fetched {len(data)} records")
+        print(f"Page {page}/{total_pages}: fetched {len(data)} records")
         
         # Filter: only keep records with REPORT_DATE after cutoff
         added = 0
@@ -92,19 +102,17 @@ def fetch_new_data(latest_month):
         
         print(f"  → {added} new records on this page")
         
-        # Since we sort by REPORT_DATE descending, if this page has 0 new records,
-        # ALL remaining pages will also be older — stop immediately
         if added == 0:
-            if len(new_records) > 0:
-                print("  → No more new records, stopping pagination")
-            else:
-                print("  → No new data at all — data is already current")
-            break
+            consecutive_empty += 1
+            if consecutive_empty >= 2:
+                if len(new_records) > 0:
+                    print("  → No more new records, stopping")
+                else:
+                    print("  → No new data at all — data is already current")
+                break
+        else:
+            consecutive_empty = 0
         
-        if page >= pages:
-            break
-        
-        page += 1
         time.sleep(0.3)
     
     return new_records
